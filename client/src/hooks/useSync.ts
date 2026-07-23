@@ -27,7 +27,7 @@ function setVideoSrc(player: Plyr, url: string) {
   }
 }
 
-export function useSync(roomId: string | null, nickname: string, playerRef: React.RefObject<Plyr | null>) {
+export function useSync(roomId: string | null, nickname: string, playerRef: React.RefObject<Plyr | null>, onRemotePlay?: () => void) {
   const [syncState, setSyncState] = useState<SyncState>({
     isConnected: false,
     isHost: true,
@@ -37,6 +37,7 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
   const isHostRef = useRef(true);
   const stateRef = useRef({ currentTime: 0, isPlaying: false, playbackRate: 1, videoUrl: '' });
   const pendingRef = useRef<PendingState | null>(null);
+  const applyingSyncRef = useRef(false);
   const calibrateRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -67,7 +68,6 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
 
     const onPlay = ({ currentTime, timestamp }: { currentTime: number; timestamp: number }) => {
       console.log('[sync] onPlay received', { currentTime, isHost: isHostRef.current, hasPlayer: !!playerRef.current });
-      if (isHostRef.current) return;
       const player = playerRef.current;
       if (!player) return;
       const elapsed = (Date.now() - timestamp) / 1000;
@@ -75,17 +75,22 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
       if (Math.abs(player.currentTime - targetTime) > 1) {
         player.currentTime = targetTime;
       }
+      applyingSyncRef.current = true;
       player.play();
+      applyingSyncRef.current = false;
+      onRemotePlay?.();
     };
 
     const onPause = ({ currentTime }: { currentTime: number }) => {
-      if (isHostRef.current) return;
+      console.log('[sync] onPause received', { currentTime, isHost: isHostRef.current, hasPlayer: !!playerRef.current });
       const player = playerRef.current;
       if (!player) return;
       if (Math.abs(player.currentTime - currentTime) > 1) {
         player.currentTime = currentTime;
       }
+      applyingSyncRef.current = true;
       player.pause();
+      applyingSyncRef.current = false;
     };
 
     const onSeek = ({ currentTime }: { currentTime: number }) => {
@@ -325,9 +330,11 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
 
   return {
     ...syncState,
+    applyingSyncRef,
     play, pause, seek, setRate, changeVideo,
     requestSync, setPlayerReady, requestHost, acceptHost, declineHost,
   } as SyncState & {
+    applyingSyncRef: React.MutableRefObject<boolean>;
     play: (t: number) => void; pause: (t: number) => void;
     seek: (t: number) => void; setRate: (r: number) => void;
     changeVideo: (u: string) => void;

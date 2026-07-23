@@ -405,6 +405,71 @@ body {
   color: #f39c12;
 }
 
+/* Minimize button */
+.minimize-btn {
+  display: none;
+  padding: 6px 14px;
+  border: 1px solid #888;
+  border-radius: 6px;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.minimize-btn:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Regular header buttons */
+.regular-btns {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Cinema mode */
+.watch-room.cinema-mode {
+  background: #000;
+}
+
+.watch-room.cinema-mode .room-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: none;
+}
+
+.watch-room.cinema-mode .room-header .room-id,
+.watch-room.cinema-mode .room-header .sync-status {
+  color: #ccc;
+}
+
+.watch-room.cinema-mode .minimize-btn {
+  display: inline-flex;
+}
+
+.watch-room.cinema-mode .regular-btns {
+  display: none;
+}
+
+.watch-room.cinema-mode .host-controls {
+  display: none !important;
+}
+
+.watch-room.cinema-mode .room-info {
+  display: none !important;
+}
+
+.watch-room.cinema-mode .video-wrapper {
+  flex: 1;
+}
+
 /* Hide Plyr's large play button on mobile fullscreen overlap */
 .plyr--fullscreen-active .plyr__controls {
   padding: 20px;
@@ -543,5 +608,9 @@ body {
 
   .video-wrapper {
     max-height: 75vh;
+  }
+
+  .watch-room.cinema-mode .video-wrapper {
+    max-height: none;
   }
 }

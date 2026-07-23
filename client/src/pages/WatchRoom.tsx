@@ -27,6 +27,7 @@ type HostTab = 'url' | 'local' | 'upload';
 
 export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps) {
   const playerRef = useRef<Plyr>(null);
+  const roomRef = useRef<HTMLDivElement>(null);
   const [videoUrl, setVideoUrl] = useState(TEST_VIDEO_URL);
   const [urlInput, setUrlInput] = useState('');
   const [localVideos, setLocalVideos] = useState<VideoFile[]>([]);
@@ -35,11 +36,20 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  const enterCinema = useCallback(() => {
+    roomRef.current?.classList.add('cinema-mode');
+  }, []);
+
+  const leaveCinema = useCallback(() => {
+    roomRef.current?.classList.remove('cinema-mode');
+  }, []);
+
   const {
     isConnected, isHost, userCount, hostRequested,
+    applyingSyncRef,
     play, pause, seek, setRate, changeVideo,
     requestSync, setPlayerReady, requestHost, acceptHost, declineHost,
-  } = useSync(roomId, nickname, playerRef);
+  } = useSync(roomId, nickname, playerRef, enterCinema);
 
   const showToast = useCallback((message: string, type: ToastData['type'] = 'info') => {
     setToast({ message, type });
@@ -56,12 +66,15 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
   useEffect(() => { fetchVideos(); }, [fetchVideos]);
 
   const handlePlay = useCallback((currentTime: number) => {
-    if (isHost) play(currentTime);
-  }, [isHost, play]);
+    if (applyingSyncRef.current) return;
+    enterCinema();
+    play(currentTime);
+  }, [play, applyingSyncRef, enterCinema]);
 
   const handlePause = useCallback((currentTime: number) => {
-    if (isHost) pause(currentTime);
-  }, [isHost, pause]);
+    if (applyingSyncRef.current) return;
+    pause(currentTime);
+  }, [pause, applyingSyncRef]);
 
   const handleSeek = useCallback((currentTime: number) => {
     if (isHost) seek(currentTime);
@@ -145,18 +158,21 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
   };
 
   return (
-    <div className="watch-room">
+    <div ref={roomRef} className="watch-room">
       <div className="room-header">
         <div className="header-left">
           <span className="room-id">房间: {roomId}</span>
           <SyncStatus isConnected={isConnected} isHost={isHost} userCount={userCount} />
         </div>
         <div className="header-right">
-          {!isHost && (
-            <button onClick={handleRequestHost} className="host-request-btn">切换主控</button>
-          )}
-          <button onClick={requestSync} className="sync-btn">同步</button>
-          <button onClick={onLeave} className="leave-btn">离开</button>
+          <button onClick={leaveCinema} className="minimize-btn">收起</button>
+          <span className="regular-btns">
+            {!isHost && (
+              <button onClick={handleRequestHost} className="host-request-btn">切换主控</button>
+            )}
+            <button onClick={requestSync} className="sync-btn">同步</button>
+            <button onClick={onLeave} className="leave-btn">离开</button>
+          </span>
         </div>
       </div>
 
