@@ -1,0 +1,547 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f0f0f;
+  color: #f0f0f0;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Home */
+.home-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+  gap: 24px;
+}
+
+.home-page h1 {
+  font-size: 40px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+}
+
+.subtitle {
+  color: #888;
+  font-size: 16px;
+  text-align: center;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.mode-switch button {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.2s;
+  min-height: 44px;
+}
+
+.mode-switch button.active {
+  background: #6c5ce7;
+  color: #fff;
+  border-color: #6c5ce7;
+}
+
+.room-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.room-form input {
+  padding: 14px 16px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+  min-height: 48px;
+}
+
+.room-form input:focus {
+  border-color: #6c5ce7;
+}
+
+.primary-btn {
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background: #6c5ce7;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-height: 48px;
+}
+
+.primary-btn:hover {
+  background: #5a4bd1;
+}
+
+/* Watch Room */
+.watch-room {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+.room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #333;
+  gap: 8px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.room-id {
+  font-size: 13px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.sync-btn {
+  padding: 6px 14px;
+  border: 1px solid #6c5ce7;
+  border-radius: 6px;
+  background: transparent;
+  color: #6c5ce7;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 36px;
+}
+
+.sync-btn:active {
+  background: rgba(108, 92, 231, 0.2);
+}
+
+.leave-btn {
+  padding: 6px 14px;
+  border: 1px solid #e74c3c;
+  border-radius: 6px;
+  background: transparent;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 36px;
+}
+
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.connected {
+  background: #2ecc71;
+}
+
+.status-dot.disconnected {
+  background: #e74c3c;
+}
+
+.video-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+}
+
+.video-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Host controls */
+.host-controls {
+  border-top: 1px solid #333;
+  background: #1a1a1a;
+  flex-shrink: 0;
+}
+
+.control-tabs {
+  display: flex;
+  border-bottom: 1px solid #333;
+}
+
+.control-tabs button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  min-height: 44px;
+}
+
+.control-tabs button.active {
+  color: #6c5ce7;
+  border-bottom: 2px solid #6c5ce7;
+  background: rgba(108, 92, 231, 0.1);
+}
+
+.local-files {
+  padding: 10px 12px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.file-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #222;
+  color: #f0f0f0;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 6px;
+  transition: background 0.2s;
+  min-height: 44px;
+}
+
+.file-item:active {
+  background: #333;
+  border-color: #6c5ce7;
+}
+
+.refresh-btn {
+  width: 100%;
+  padding: 10px;
+  border: 1px dashed #444;
+  border-radius: 6px;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 40px;
+}
+
+.empty-hint {
+  color: #666;
+  font-size: 13px;
+  text-align: center;
+  padding: 16px;
+  line-height: 1.5;
+}
+
+/* Upload */
+.upload-area {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  border: 2px dashed #6c5ce7;
+  border-radius: 10px;
+  background: rgba(108, 92, 231, 0.08);
+  color: #6c5ce7;
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 52px;
+  min-width: 200px;
+  transition: background 0.2s;
+}
+
+.upload-btn:active {
+  background: rgba(108, 92, 231, 0.2);
+}
+
+.upload-hint {
+  color: #666;
+  font-size: 12px;
+  text-align: center;
+}
+
+.upload-progress {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #6c5ce7;
+  border-radius: 4px;
+  transition: width 0.2s;
+}
+
+.progress-text {
+  color: #888;
+  font-size: 13px;
+}
+
+.url-form {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.url-form input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  min-height: 44px;
+}
+
+.url-form input:focus {
+  border-color: #6c5ce7;
+}
+
+.url-form button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #6c5ce7;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.room-info {
+  padding: 8px 12px;
+  color: #666;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a1a1a;
+  border-top: 1px solid #333;
+  flex-shrink: 0;
+}
+
+.hint {
+  color: #f39c12;
+}
+
+/* Hide Plyr's large play button on mobile fullscreen overlap */
+.plyr--fullscreen-active .plyr__controls {
+  padding: 20px;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 1000;
+  animation: toast-in 0.3s ease;
+  pointer-events: none;
+}
+
+.toast-info {
+  background: #333;
+  color: #f0f0f0;
+  border: 1px solid #555;
+}
+
+.toast-success {
+  background: #1a3a2a;
+  color: #2ecc71;
+  border: 1px solid #2ecc71;
+}
+
+.toast-error {
+  background: #3a1a1a;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Dialog */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.dialog {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 24px;
+  width: 300px;
+  max-width: 90vw;
+}
+
+.dialog p {
+  font-size: 15px;
+  color: #f0f0f0;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.dialog-actions button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.cancel-btn {
+  background: #333;
+  color: #f0f0f0;
+  border: 1px solid #555 !important;
+}
+
+.host-request-btn {
+  padding: 6px 14px;
+  border: 1px solid #f39c12;
+  border-radius: 6px;
+  background: transparent;
+  color: #f39c12;
+  cursor: pointer;
+  font-size: 13px;
+  min-height: 36px;
+  white-space: nowrap;
+}
+
+.host-request-btn:active {
+  background: rgba(243, 156, 18, 0.2);
+}
+
+.sep {
+  color: #444;
+}
+
+@media (min-width: 768px) {
+  .home-page h1 {
+    font-size: 48px;
+  }
+
+  .room-header {
+    padding: 12px 20px;
+  }
+
+  .room-id {
+    font-size: 14px;
+  }
+
+  .local-files {
+    padding: 12px 20px;
+    max-height: 220px;
+  }
+
+  .url-form {
+    padding: 12px 20px;
+  }
+
+  .room-info {
+    padding: 12px 20px;
+  }
+
+  .video-wrapper {
+    max-height: 75vh;
+  }
+}
