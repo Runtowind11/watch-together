@@ -101,46 +101,82 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
     changeVideo(url);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const CHUNK_SIZE = 5 * 1024 * 1024;
+  const UPLOAD_CONCURRENCY = 4;
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     setUploadProgress(0);
 
-    const formData = new FormData();
-    formData.append('video', file);
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const uploadId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
-    const xhr = new XMLHttpRequest();
+    const uploadChunk = async (chunkIndex: number): Promise<void> => {
+      const start = chunkIndex * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, file.size);
+      const formData = new FormData();
+      formData.append('video', file.slice(start, end));
+      formData.append('uploadId', uploadId);
+      formData.append('chunkIndex', String(chunkIndex));
+      formData.append('totalChunks', String(totalChunks));
+      formData.append('filename', file.name);
 
-    xhr.upload.onprogress = (evt) => {
-      if (evt.lengthComputable) {
-        setUploadProgress(Math.round((evt.loaded / evt.total) * 100));
+      const res = await fetch('/api/upload-chunk', { method: 'POST', body: formData });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: '上传失败' }));
+        throw new Error(data.error || `分片 ${chunkIndex} 失败`);
       }
     };
 
-    xhr.onload = () => {
-      setUploading(false);
-      if (xhr.status === 200) {
-        const result = JSON.parse(xhr.responseText);
-        playVideo(result.url);
-        showToast(`上传完成: ${file.name}`, 'success');
-        fetchVideos();
-      } else {
-        const err = JSON.parse(xhr.responseText);
-        showToast(err.error || '上传失败', 'error');
+    let completed = 0;
+    const errors: string[] = [];
+    const runWorker = async (startIdx: number) => {
+      for (let i = startIdx; i < totalChunks; i += UPLOAD_CONCURRENCY) {
+        if (errors.length > 0) return;
+        try {
+          await uploadChunk(i);
+          completed++;
+          setUploadProgress(Math.round((completed / totalChunks) * 100));
+        } catch (err) {
+          errors.push(String(err));
+          return;
+        }
       }
-      e.target.value = '';
     };
 
-    xhr.onerror = () => {
+    await Promise.all(
+      Array.from({ length: UPLOAD_CONCURRENCY }, (_, i) => runWorker(i))
+    );
+
+    if (errors.length > 0) {
       setUploading(false);
       showToast('上传失败，请检查网络', 'error');
       e.target.value = '';
-    };
+      return;
+    }
 
-    xhr.open('POST', '/api/upload');
-    xhr.send(formData);
+    try {
+      const mergeRes = await fetch('/api/upload-chunk/merge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uploadId, filename: file.name, totalChunks }),
+      });
+
+      if (!mergeRes.ok) throw new Error('合并失败');
+
+      const result = await mergeRes.json();
+      playVideo(result.url);
+      showToast(`上传完成: ${file.name}`, 'success');
+      fetchVideos();
+    } catch {
+      showToast('文件合并失败', 'error');
+    }
+
+    setUploading(false);
+    e.target.value = '';
   };
 
   const handleRequestHost = () => {
