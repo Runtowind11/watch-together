@@ -49,7 +49,9 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
     applyingSyncRef,
     play, pause, seek, setRate, changeVideo,
     requestSync, setPlayerReady, requestHost, acceptHost, declineHost,
-  } = useSync(roomId, nickname, playerRef, enterCinema);
+  } = useSync(roomId, nickname, playerRef, enterCinema, (name) => {
+    showToast(`"${name}" 进入了房间`, 'info');
+  });
 
   const showToast = useCallback((message: string, type: ToastData['type'] = 'info') => {
     setToast({ message, type });

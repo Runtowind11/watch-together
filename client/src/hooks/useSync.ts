@@ -27,7 +27,7 @@ function setVideoSrc(player: Plyr, url: string) {
   }
 }
 
-export function useSync(roomId: string | null, nickname: string, playerRef: React.RefObject<Plyr | null>, onRemotePlay?: () => void) {
+export function useSync(roomId: string | null, nickname: string, playerRef: React.RefObject<Plyr | null>, onRemotePlay?: () => void, onUserJoined?: (nickname: string) => void) {
   const [syncState, setSyncState] = useState<SyncState>({
     isConnected: false,
     isHost: true,
@@ -62,8 +62,9 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
       }
     };
 
-    const onUserJoined = ({ userCount }: { userCount: number }) => {
+    const onUserJoined = ({ nickname, userCount }: { nickname: string; userCount: number }) => {
       setSyncState(s => ({ ...s, userCount }));
+      onUserJoined?.(nickname);
     };
 
     const onPlay = ({ currentTime, timestamp }: { currentTime: number; timestamp: number }) => {
