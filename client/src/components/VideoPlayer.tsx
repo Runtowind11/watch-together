@@ -16,7 +16,6 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
   ({ videoUrl, onPlay, onPause, onSeek, onRate, onReady, onPlaying }, ref) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [loading, setLoading] = useState(false);
-    const isFirstLoad = useRef(true);
 
     useEffect(() => {
       const video = videoRef.current;
@@ -75,12 +74,10 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
 
     return (
       <div className="video-wrapper">
-        {loading && (
-          <div className="video-loading">
-            <div className="spinner" />
-            <span>正在加载视频...</span>
-          </div>
-        )}
+        <div className="video-loading" style={{ display: loading ? 'flex' : 'none' }}>
+          <div className="spinner" />
+          <span>正在加载视频...</span>
+        </div>
         <video ref={videoRef} playsInline webkit-playsinline="true" preload="auto" />
       </div>
     );
