@@ -44,6 +44,7 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
       player.on('pause', () => onPause?.(player.currentTime));
       player.on('seeked', () => onSeek?.(player.currentTime));
       player.on('ratechange', () => onRate?.(player.speed));
+      player.on('canplay', () => setLoading(false));
       player.on('playing', () => {
         setLoading(false);
         onPlaying?.();
