@@ -190,6 +190,10 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
     socket.on('disconnect', onDisconnect);
     socket.on('room-joined', onRoomJoined);
     socket.on('user-joined', handleUserJoined);
+    const handleUserLeft = ({ userCount }: { userCount: number }) => {
+      setSyncState(s => ({ ...s, userCount }));
+    };
+    socket.on('user-left', handleUserLeft);
 
     if (socket.connected) {
       onConnect();
@@ -211,6 +215,7 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
       socket.off('disconnect', onDisconnect);
       socket.off('room-joined', onRoomJoined);
       socket.off('user-joined', handleUserJoined);
+      socket.off('user-left', handleUserLeft);
       socket.off('sync:play', onPlay);
       socket.off('sync:pause', onPause);
       socket.off('sync:seek', onSeek);

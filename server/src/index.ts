@@ -41,6 +41,8 @@ io.on('connection', (socket) => {
 
     socket.to(roomId).emit('user-joined', { nickname, userCount });
     socket.emit('room-joined', { roomId, userCount });
+
+    (socket as any).__roomId = roomId;
   });
 
   socket.on('sync:play', ({ roomId, currentTime, timestamp }) => {
@@ -89,6 +91,11 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`[disconnect] ${socket.id}`);
+    const roomId = (socket as any).__roomId;
+    if (roomId && io.sockets.adapter.rooms.has(roomId)) {
+      const room = io.sockets.adapter.rooms.get(roomId)!;
+      socket.to(roomId).emit('user-left', { userCount: room.size });
+    }
   });
 });
 
