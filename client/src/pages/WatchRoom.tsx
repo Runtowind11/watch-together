@@ -1,5 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
-import type Plyr from 'plyr';
+import { useRef, useState, useCallback, useEffect, type ComponentRef } from 'react';
 import VideoPlayer from '../components/VideoPlayer';
 import SyncStatus from '../components/SyncStatus';
 import Toast from '../components/Toast';
@@ -35,7 +34,7 @@ type HostTab = 'url' | 'local' | 'upload';
 const REACTIONS = ['❤️', '😂', '😱', '😢', '😍', '👏'] as const;
 
 export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps) {
-  const playerRef = useRef<Plyr>(null);
+  const playerRef = useRef<ComponentRef<typeof VideoPlayer>>(null);
   const roomRef = useRef<HTMLDivElement>(null);
   const pendingVideoNameRef = useRef('');
   const [videoUrl, setVideoUrl] = useState(TEST_VIDEO_URL);
