@@ -9,10 +9,11 @@ interface VideoPlayerProps {
   onSeek?: (currentTime: number) => void;
   onRate?: (playbackRate: number) => void;
   onReady?: () => void;
+  onPlaying?: () => void;
 }
 
 const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
-  ({ videoUrl, onPlay, onPause, onSeek, onRate, onReady }, ref) => {
+  ({ videoUrl, onPlay, onPause, onSeek, onRate, onReady, onPlaying }, ref) => {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -41,6 +42,7 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
       player.on('pause', () => onPause?.(player.currentTime));
       player.on('seeked', () => onSeek?.(player.currentTime));
       player.on('ratechange', () => onRate?.(player.speed));
+      player.on('playing', () => onPlaying?.());
 
       onReady?.();
 

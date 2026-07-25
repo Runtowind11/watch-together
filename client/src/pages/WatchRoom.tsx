@@ -28,6 +28,7 @@ type HostTab = 'url' | 'local' | 'upload';
 export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps) {
   const playerRef = useRef<Plyr>(null);
   const roomRef = useRef<HTMLDivElement>(null);
+  const pendingVideoNameRef = useRef('');
   const [videoUrl, setVideoUrl] = useState(TEST_VIDEO_URL);
   const [urlInput, setUrlInput] = useState('');
   const [localVideos, setLocalVideos] = useState<VideoFile[]>([]);
@@ -91,6 +92,13 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
     if (isHost) setRate(rate);
   }, [isHost, setRate]);
 
+  const handlePlaying = useCallback(() => {
+    if (pendingVideoNameRef.current) {
+      showToast(`正在播放: ${pendingVideoNameRef.current}`, 'success');
+      pendingVideoNameRef.current = '';
+    }
+  }, [showToast]);
+
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!urlInput.trim()) return;
@@ -100,7 +108,7 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
   const handleSelectLocalVideo = (file: VideoFile) => {
     const url = `/api/video/${file.path}`;
     playVideo(url);
-    showToast(`正在播放: ${file.name}`, 'success');
+    pendingVideoNameRef.current = file.name;
   };
 
   const playVideo = (url: string) => {
@@ -230,6 +238,7 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
           console.log('[WatchRoom] onReady');
           setPlayerReady();
         }}
+        onPlaying={handlePlaying}
       />
 
       {isHost && (
