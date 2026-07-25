@@ -58,25 +58,22 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
     }, [ref]);
 
     useEffect(() => {
-      if (!videoUrl) return;
       const player = ref && 'current' in ref ? ref.current : null;
-      const video = videoRef.current;
-
+      if (!player || !videoUrl) return;
       try {
-        if (player) {
-          player.source = { type: 'video', sources: [{ src: videoUrl }] };
+        player.source = { type: 'video', sources: [{ src: videoUrl }] };
+      } catch (e) {
+        const vid = videoRef.current;
+        if (vid) {
+          vid.src = videoUrl;
+          vid.load();
         }
-      } catch {}
-
-      if (video) {
-        video.src = videoUrl;
-        video.load();
       }
     }, [videoUrl, ref]);
 
     return (
       <div className="video-wrapper">
-        <video ref={videoRef} playsInline webkit-playsinline="true" />
+        <video ref={videoRef} playsInline webkit-playsinline="true" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
       </div>
     );
   }
