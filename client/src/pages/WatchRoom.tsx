@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
-import Plyr from 'plyr';
+import type Plyr from 'plyr';
 import VideoPlayer from '../components/VideoPlayer';
 import SyncStatus from '../components/SyncStatus';
 import Toast from '../components/Toast';
