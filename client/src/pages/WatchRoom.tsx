@@ -36,11 +36,16 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  const cinemaRef = useRef(false);
+
   const enterCinema = useCallback(() => {
+    if (cinemaRef.current) return;
+    cinemaRef.current = true;
     roomRef.current?.classList.add('cinema-mode');
   }, []);
 
   const leaveCinema = useCallback(() => {
+    cinemaRef.current = false;
     roomRef.current?.classList.remove('cinema-mode');
   }, []);
 
