@@ -26,7 +26,6 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
           controls: ['play-large', 'play', 'progress', 'current-time', 'settings', 'fullscreen'],
           settings: ['speed'],
           speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
-          playsinline: true,
           fullscreen: { enabled: true, iosNative: true },
         });
       } catch (err) {
