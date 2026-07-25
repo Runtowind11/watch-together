@@ -23,7 +23,16 @@ interface ToastData {
   type: 'info' | 'success' | 'error';
 }
 
+interface ReactionItem {
+  id: string;
+  emoji: string;
+  x: number;
+  y: number;
+}
+
 type HostTab = 'url' | 'local' | 'upload';
+
+const REACTIONS = ['❤️', '😂', '😱', '😢', '😍', '👏'] as const;
 
 export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps) {
   const playerRef = useRef<Plyr>(null);
@@ -38,6 +47,27 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const cinemaRef = useRef(false);
+  const kissTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const [partnerName, setPartnerName] = useState<string | null>(null);
+  const [reactions, setReactions] = useState<ReactionItem[]>([]);
+  const [kissEffect, setKissEffect] = useState<'send' | 'receive' | null>(null);
+
+  const addReaction = useCallback((emoji: string) => {
+    const id = crypto.randomUUID();
+    const x = 15 + Math.random() * 70;
+    const y = 30 + Math.random() * 40;
+    setReactions(prev => [...prev, { id, emoji, x, y }]);
+    setTimeout(() => {
+      setReactions(prev => prev.filter(r => r.id !== id));
+    }, 2000);
+  }, []);
+
+  const triggerKiss = useCallback((type: 'send' | 'receive') => {
+    setKissEffect(type);
+    if (kissTimeoutRef.current) clearTimeout(kissTimeoutRef.current);
+    kissTimeoutRef.current = setTimeout(() => setKissEffect(null), 2000);
+  }, []);
 
   const enterCinema = useCallback(() => {
     if (cinemaRef.current) return;
@@ -55,9 +85,32 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
     applyingSyncRef,
     play, pause, seek, setRate, changeVideo,
     requestSync, setPlayerReady, requestHost, acceptHost, declineHost,
+    sendReaction, sendKiss,
   } = useSync(roomId, nickname, playerRef, enterCinema, (name) => {
+    setPartnerName(name);
     showToast(`"${name}" 进入了房间`, 'info');
+  }, (emoji) => {
+    addReaction(emoji);
+  }, () => {
+    triggerKiss('receive');
+  }, (name) => {
+    setPartnerName(name);
   });
+
+  const handleReaction = useCallback((emoji: string) => {
+    addReaction(emoji);
+    sendReaction(emoji);
+  }, [addReaction, sendReaction]);
+
+  const handleKiss = useCallback(() => {
+    sendKiss();
+  }, [sendKiss]);
+
+  useEffect(() => {
+    if (userCount <= 1) {
+      setPartnerName(null);
+    }
+  }, [userCount]);
 
   const showToast = useCallback((message: string, type: ToastData['type'] = 'info') => {
     setToast({ message, type });
@@ -230,6 +283,7 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
       <VideoPlayer
         ref={playerRef}
         videoUrl={videoUrl}
+        reactions={reactions}
         onPlay={handlePlay}
         onPause={handlePause}
         onSeek={handleSeek}
@@ -240,6 +294,14 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
         }}
         onPlaying={handlePlaying}
       />
+
+      <div className="reaction-bar">
+        {REACTIONS.map(emoji => (
+          <button key={emoji} className="reaction-btn" onClick={() => handleReaction(emoji)}>
+            {emoji}
+          </button>
+        ))}
+      </div>
 
       {isHost && (
         <div className="host-controls">
@@ -292,6 +354,7 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
 
       <div className="room-info">
         <span>{nickname}</span>
+        {partnerName && <><span className="sep">·</span><span className="partner-name" onClick={handleKiss}>{partnerName} 💋</span></>}
         <span className="sep">·</span>
         <span>{isHost ? '主控中' : '跟随中'}</span>
         {!isHost && <><span className="sep">·</span><span className="hint">点击「同步」对齐位置</span></>}
@@ -306,6 +369,19 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
               <button onClick={handleDeclineHost} className="cancel-btn">拒绝</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {kissEffect && (
+        <div className="kiss-overlay" onAnimationEnd={() => setKissEffect(null)}>
+          <div className="kiss-heart">💋</div>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <span key={i} className="kiss-particle" style={{
+              left: `${20 + Math.random() * 60}%`,
+              top: `${20 + Math.random() * 60}%`,
+              animationDelay: `${i * 0.15}s`,
+            }}>💋</span>
+          ))}
         </div>
       )}
 

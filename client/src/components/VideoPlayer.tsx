@@ -10,10 +10,11 @@ interface VideoPlayerProps {
   onRate?: (playbackRate: number) => void;
   onReady?: () => void;
   onPlaying?: () => void;
+  reactions?: { id: string; emoji: string; x: number; y: number }[];
 }
 
 const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
-  ({ videoUrl, onPlay, onPause, onSeek, onRate, onReady, onPlaying }, ref) => {
+  ({ videoUrl, onPlay, onPause, onSeek, onRate, onReady, onPlaying, reactions }, ref) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [loading, setLoading] = useState(false);
 
@@ -80,6 +81,13 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
           <span>正在加载视频...</span>
         </div>
         <video ref={videoRef} playsInline webkit-playsinline="true" preload="auto" />
+        {reactions && reactions.length > 0 && (
+          <div className="reaction-float">
+            {reactions.map(r => (
+              <span key={r.id} className="reaction-item" style={{ left: `${r.x}%`, top: `${r.y}%` }}>{r.emoji}</span>
+            ))}
+          </div>
+        )}
       </div>
     );
   }

@@ -35,12 +35,23 @@ io.on('connection', (socket) => {
 
   socket.on('join-room', ({ roomId, nickname }) => {
     socket.join(roomId);
+    (socket as any).__nickname = nickname;
     const room = io.sockets.adapter.rooms.get(roomId);
     const userCount = room ? room.size : 0;
     console.log(`[join-room] ${nickname} (${socket.id}) -> ${roomId} (${userCount})`);
 
     socket.to(roomId).emit('user-joined', { nickname, userCount });
-    socket.emit('room-joined', { roomId, userCount });
+
+    let partnerNickname: string | undefined;
+    if (userCount > 1) {
+      for (const [sid, s] of io.sockets.sockets) {
+        if (sid !== socket.id && s.rooms.has(roomId)) {
+          partnerNickname = (s as any).__nickname;
+          break;
+        }
+      }
+    }
+    socket.emit('room-joined', { roomId, userCount, partnerNickname });
 
     (socket as any).__roomId = roomId;
   });
@@ -87,6 +98,14 @@ io.on('connection', (socket) => {
 
   socket.on('sync:declineHost', ({ roomId }) => {
     socket.to(roomId).emit('sync:declineHost', {});
+  });
+
+  socket.on('emoji:react', ({ roomId, emoji }) => {
+    socket.to(roomId).emit('emoji:react', { emoji });
+  });
+
+  socket.on('kiss', ({ roomId }) => {
+    socket.to(roomId).emit('kiss', {});
   });
 
   socket.on('disconnect', () => {

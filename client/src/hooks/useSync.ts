@@ -27,7 +27,7 @@ function setVideoSrc(player: Plyr, url: string) {
   }
 }
 
-export function useSync(roomId: string | null, nickname: string, playerRef: React.RefObject<Plyr | null>, onRemotePlay?: () => void, onUserJoined?: (nickname: string) => void) {
+export function useSync(roomId: string | null, nickname: string, playerRef: React.RefObject<Plyr | null>, onRemotePlay?: () => void, onUserJoined?: (nickname: string) => void, onReaction?: (emoji: string) => void, onKiss?: () => void, onPartnerInfo?: (nickname: string) => void) {
   const [syncState, setSyncState] = useState<SyncState>({
     isConnected: false,
     isHost: true,
@@ -52,11 +52,14 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
     };
     const onDisconnect = () => setSyncState(s => ({ ...s, isConnected: false }));
 
-    const onRoomJoined = ({ userCount }: { userCount: number }) => {
+    const onRoomJoined = ({ userCount, partnerNickname }: { userCount: number; partnerNickname?: string }) => {
       console.log('[useSync] room-joined', { userCount, isHost: userCount === 1 });
       const host = userCount === 1;
       setSyncState(s => ({ ...s, isHost: host, userCount }));
       isHostRef.current = host;
+      if (partnerNickname) {
+        onPartnerInfo?.(partnerNickname);
+      }
       if (!host) {
         socket.emit('sync:requestState', { roomId });
       }
@@ -209,6 +212,8 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
     socket.on('sync:requestHost', onRequestHost);
     socket.on('sync:acceptHost', onAcceptHost);
     socket.on('sync:declineHost', onDeclineHost);
+    socket.on('emoji:react', ({ emoji }: { emoji: string }) => onReaction?.(emoji));
+    socket.on('kiss', () => onKiss?.());
 
     return () => {
       socket.off('connect', onConnect);
@@ -227,6 +232,8 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
       socket.off('sync:requestHost', onRequestHost);
       socket.off('sync:acceptHost', onAcceptHost);
       socket.off('sync:declineHost', onDeclineHost);
+      socket.off('emoji:react');
+      socket.off('kiss');
     };
   }, [roomId, nickname, playerRef]);
 
@@ -334,11 +341,20 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
     socket.emit('sync:declineHost', { roomId });
   }, [roomId]);
 
+  const sendReaction = useCallback((emoji: string) => {
+    socket.emit('emoji:react', { roomId, emoji });
+  }, [roomId]);
+
+  const sendKiss = useCallback(() => {
+    socket.emit('kiss', { roomId });
+  }, [roomId]);
+
   return {
     ...syncState,
     applyingSyncRef,
     play, pause, seek, setRate, changeVideo,
     requestSync, setPlayerReady, requestHost, acceptHost, declineHost,
+    sendReaction, sendKiss,
   } as SyncState & {
     applyingSyncRef: React.MutableRefObject<boolean>;
     play: (t: number) => void; pause: (t: number) => void;
@@ -346,5 +362,6 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
     changeVideo: (u: string) => void;
     requestSync: () => void; setPlayerReady: () => void; requestHost: () => void;
     acceptHost: () => void; declineHost: () => void;
+    sendReaction: (e: string) => void; sendKiss: () => void;
   };
 }
