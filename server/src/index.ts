@@ -3,7 +3,8 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
-import { SERVER_PORT, CLIENT_DIST } from './config';
+import { exec } from 'child_process';
+import { SERVER_PORT, CLIENT_DIST, VIDEOS_DIR } from './config';
 import videoRouter from './routes/video';
 import uploadRouter from './routes/upload';
 import fs from 'fs';
@@ -93,4 +94,41 @@ io.on('connection', (socket) => {
 
 httpServer.listen(SERVER_PORT, () => {
   console.log(`Server running on http://localhost:${SERVER_PORT}`);
+
+  // Optimize existing MP4 videos in background
+  exec('ffmpeg -version', (noFfmpeg) => {
+    if (noFfmpeg) {
+      console.log('[optimize] ffmpeg not found, skip existing videos optimization');
+      return;
+    }
+    if (!fs.existsSync(VIDEOS_DIR)) return;
+    const files = fs.readdirSync(VIDEOS_DIR).filter(f => /\.mp4$/i.test(f));
+    if (files.length === 0) return;
+    console.log(`[optimize] optimizing ${files.length} existing MP4 files...`);
+    let i = 0;
+    const next = () => {
+      if (i >= files.length) {
+        console.log('[optimize] done');
+        return;
+      }
+      const file = files[i++];
+      const fullPath = path.join(VIDEOS_DIR, file);
+      const tmpPath = fullPath + '.opt.mp4';
+      exec(
+        `ffmpeg -i "${fullPath}" -movflags +faststart -codec copy -y "${tmpPath}"`,
+        (err) => {
+          if (err) {
+            try { fs.unlinkSync(tmpPath); } catch {}
+          } else {
+            try {
+              fs.renameSync(tmpPath, fullPath);
+              console.log(`[optimize]  ${file}`);
+            } catch {}
+          }
+          setTimeout(next, 100);
+        },
+      );
+    };
+    next();
+  });
 });
