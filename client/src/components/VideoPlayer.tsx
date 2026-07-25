@@ -73,7 +73,7 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
 
     return (
       <div className="video-wrapper">
-        <video ref={videoRef} playsInline webkit-playsinline="true" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
+        <video ref={videoRef} playsInline webkit-playsinline="true" preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
       </div>
     );
   }
