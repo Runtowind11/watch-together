@@ -76,6 +76,13 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
 
     return (
       <div className="video-wrapper">
+        {!videoUrl && (
+          <div className="video-placeholder">
+            <span className="placeholder-heart">💗</span>
+            <span className="placeholder-text">LOVE MOVIES</span>
+            <span className="placeholder-heart">💗</span>
+          </div>
+        )}
         <div className="video-loading" style={{ display: loading ? 'flex' : 'none' }}>
           <div className="spinner" />
           <span>正在加载视频...</span>

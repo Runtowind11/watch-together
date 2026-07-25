@@ -27,7 +27,7 @@ function setVideoSrc(player: Plyr, url: string) {
   }
 }
 
-export function useSync(roomId: string | null, nickname: string, playerRef: React.RefObject<Plyr | null>, onRemotePlay?: () => void, onUserJoined?: (nickname: string) => void, onReaction?: (emoji: string) => void, onKiss?: () => void, onPartnerInfo?: (nickname: string) => void) {
+export function useSync(roomId: string | null, nickname: string, playerRef: React.RefObject<Plyr | null>, onRemotePlay?: () => void, onUserJoined?: (nickname: string) => void, onReaction?: (emoji: string) => void, onKiss?: () => void, onPartnerInfo?: (nickname: string) => void, onRemoteChangeVideo?: (url: string) => void) {
   const [syncState, setSyncState] = useState<SyncState>({
     isConnected: false,
     isHost: true,
@@ -115,6 +115,7 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
       console.log('[sync] onChangeVideo', { videoUrl, isHost: isHostRef.current, hasPlayer: !!playerRef.current });
       if (isHostRef.current) return;
       stateRef.current.videoUrl = videoUrl;
+      onRemoteChangeVideo?.(videoUrl);
       const player = playerRef.current;
       if (!player) return;
       if (videoUrl) {
@@ -145,6 +146,7 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
       stateRef.current.currentTime = currentTime;
       stateRef.current.isPlaying = isPlaying;
       stateRef.current.playbackRate = playbackRate;
+      onRemoteChangeVideo?.(videoUrl);
       const player = playerRef.current;
       if (!player) {
         pendingRef.current = { videoUrl, currentTime, isPlaying, playbackRate };
@@ -194,7 +196,13 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
     socket.on('room-joined', onRoomJoined);
     socket.on('user-joined', handleUserJoined);
     const handleUserLeft = ({ userCount }: { userCount: number }) => {
-      setSyncState(s => ({ ...s, userCount }));
+      setSyncState(s => {
+        const newIsHost = userCount <= 1 ? true : s.isHost;
+        if (newIsHost !== s.isHost) {
+          isHostRef.current = true;
+        }
+        return { ...s, userCount, isHost: newIsHost };
+      });
     };
     socket.on('user-left', handleUserLeft);
 

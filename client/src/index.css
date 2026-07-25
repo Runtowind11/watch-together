@@ -123,41 +123,46 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 6px 8px;
   background: #1a1a1a;
   border-bottom: 1px solid #333;
-  gap: 8px;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   min-width: 0;
+  overflow: hidden;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
 .room-id {
-  font-size: 13px;
+  font-size: 12px;
   color: #888;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
 }
 
 .sync-btn {
-  padding: 6px 14px;
+  padding: 5px 10px;
+  font-size: 12px;
+  min-height: 32px;
   border: 1px solid #6c5ce7;
   border-radius: 6px;
   background: transparent;
   color: #6c5ce7;
   cursor: pointer;
-  font-size: 13px;
-  min-height: 36px;
 }
 
 .sync-btn:active {
@@ -165,14 +170,45 @@ body {
 }
 
 .leave-btn {
-  padding: 6px 14px;
+  padding: 5px 10px;
+  font-size: 12px;
+  min-height: 32px;
   border: 1px solid #e74c3c;
   border-radius: 6px;
   background: transparent;
   color: #e74c3c;
   cursor: pointer;
-  font-size: 13px;
-  min-height: 36px;
+}
+
+.host-request-btn {
+  padding: 5px 10px;
+  font-size: 12px;
+  min-height: 32px;
+  border: 1px solid #f39c12;
+  border-radius: 6px;
+  background: transparent;
+  color: #f39c12;
+  cursor: pointer;
+}
+
+.host-request-btn:active {
+  background: rgba(243, 156, 18, 0.2);
+}
+
+.minimize-btn {
+  display: none;
+  padding: 5px 10px;
+  font-size: 12px;
+  min-height: 32px;
+  border: 1px solid #888;
+  border-radius: 6px;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+}
+
+.minimize-btn:active {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .sync-status {
@@ -213,6 +249,46 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.video-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-direction: row;
+  user-select: none;
+  z-index: 3;
+  background: #000;
+}
+
+.placeholder-heart {
+  font-size: 1.8rem;
+  opacity: 0.4;
+  animation: heartBeat 1.5s ease-in-out infinite;
+}
+
+.placeholder-text {
+  font-size: clamp(1.2rem, 5vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #6c5ce7;
+  opacity: 0.5;
+}
+
+.placeholder-heart:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.placeholder-heart:nth-child(3) {
+  animation-delay: 0.75s;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 0.7; }
 }
 
 .video-loading {
@@ -497,24 +573,6 @@ body {
   transform: scale(1.2);
 }
 
-/* Minimize button */
-.minimize-btn {
-  display: none;
-  padding: 6px 14px;
-  border: 1px solid #888;
-  border-radius: 6px;
-  background: transparent;
-  color: #888;
-  cursor: pointer;
-  font-size: 13px;
-  min-height: 36px;
-  white-space: nowrap;
-}
-
-.minimize-btn:active {
-  background: rgba(255, 255, 255, 0.1);
-}
-
 /* Regular header buttons */
 .regular-btns {
   display: inline-flex;
@@ -656,22 +714,6 @@ body {
   border: 1px solid #555 !important;
 }
 
-.host-request-btn {
-  padding: 6px 14px;
-  border: 1px solid #f39c12;
-  border-radius: 6px;
-  background: transparent;
-  color: #f39c12;
-  cursor: pointer;
-  font-size: 13px;
-  min-height: 36px;
-  white-space: nowrap;
-}
-
-.host-request-btn:active {
-  background: rgba(243, 156, 18, 0.2);
-}
-
 .sep {
   color: #444;
 }
@@ -727,10 +769,29 @@ body {
 
   .room-header {
     padding: 12px 20px;
+    gap: 8px;
+  }
+
+  .header-left {
+    gap: 12px;
+  }
+
+  .header-right {
+    gap: 8px;
   }
 
   .room-id {
     font-size: 14px;
+    max-width: none;
+  }
+
+  .sync-btn,
+  .leave-btn,
+  .host-request-btn,
+  .minimize-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    min-height: 36px;
   }
 
   .local-files {

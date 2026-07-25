@@ -54,7 +54,7 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
   const [kissEffect, setKissEffect] = useState<'send' | 'receive' | null>(null);
 
   const addReaction = useCallback((emoji: string) => {
-    const id = crypto.randomUUID();
+    const id = Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
     const x = 15 + Math.random() * 70;
     const y = 30 + Math.random() * 40;
     setReactions(prev => [...prev, { id, emoji, x, y }]);
@@ -95,6 +95,8 @@ export default function WatchRoom({ roomId, nickname, onLeave }: WatchRoomProps)
     triggerKiss('receive');
   }, (name) => {
     setPartnerName(name);
+  }, (url) => {
+    setVideoUrl(url);
   });
 
   const handleReaction = useCallback((emoji: string) => {
