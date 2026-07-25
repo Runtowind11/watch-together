@@ -62,9 +62,9 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
       }
     };
 
-    const onUserJoined = ({ nickname, userCount }: { nickname: string; userCount: number }) => {
+    const handleUserJoined = ({ nickname: who, userCount }: { nickname: string; userCount: number }) => {
       setSyncState(s => ({ ...s, userCount }));
-      onUserJoined?.(nickname);
+      onUserJoined?.(who);
     };
 
     const onPlay = ({ currentTime, timestamp }: { currentTime: number; timestamp: number }) => {
@@ -189,7 +189,7 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('room-joined', onRoomJoined);
-    socket.on('user-joined', onUserJoined);
+    socket.on('user-joined', handleUserJoined);
 
     if (socket.connected) {
       onConnect();
@@ -210,7 +210,7 @@ export function useSync(roomId: string | null, nickname: string, playerRef: Reac
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('room-joined', onRoomJoined);
-      socket.off('user-joined', onUserJoined);
+      socket.off('user-joined', handleUserJoined);
       socket.off('sync:play', onPlay);
       socket.off('sync:pause', onPause);
       socket.off('sync:seek', onSeek);
