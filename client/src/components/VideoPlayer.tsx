@@ -1,4 +1,4 @@
-import { useRef, useEffect, forwardRef } from 'react';
+import { useRef, useEffect, forwardRef, useState } from 'react';
 import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
 
@@ -15,6 +15,8 @@ interface VideoPlayerProps {
 const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
   ({ videoUrl, onPlay, onPause, onSeek, onRate, onReady, onPlaying }, ref) => {
     const videoRef = useRef<HTMLVideoElement>(null);
+    const [loading, setLoading] = useState(false);
+    const isFirstLoad = useRef(true);
 
     useEffect(() => {
       const video = videoRef.current;
@@ -43,7 +45,10 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
       player.on('pause', () => onPause?.(player.currentTime));
       player.on('seeked', () => onSeek?.(player.currentTime));
       player.on('ratechange', () => onRate?.(player.speed));
-      player.on('playing', () => onPlaying?.());
+      player.on('playing', () => {
+        setLoading(false);
+        onPlaying?.();
+      });
 
       onReady?.();
 
@@ -58,22 +63,25 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
     }, [ref]);
 
     useEffect(() => {
+      if (!videoUrl) return;
+      setLoading(true);
       const player = ref && 'current' in ref ? ref.current : null;
-      if (!player || !videoUrl) return;
-      try {
-        player.source = { type: 'video', sources: [{ src: videoUrl }] };
-      } catch (e) {
-        const vid = videoRef.current;
-        if (vid) {
-          vid.src = videoUrl;
-          vid.load();
-        }
+      if (player) {
+        try {
+          player.source = { type: 'video', sources: [{ src: videoUrl }] };
+        } catch {}
       }
     }, [videoUrl, ref]);
 
     return (
       <div className="video-wrapper">
-        <video ref={videoRef} playsInline webkit-playsinline="true" preload="auto" poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
+        {loading && (
+          <div className="video-loading">
+            <div className="spinner" />
+            <span>正在加载视频...</span>
+          </div>
+        )}
+        <video ref={videoRef} playsInline webkit-playsinline="true" preload="auto" />
       </div>
     );
   }
