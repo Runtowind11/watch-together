@@ -58,16 +58,19 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
     }, [ref]);
 
     useEffect(() => {
+      if (!videoUrl) return;
       const player = ref && 'current' in ref ? ref.current : null;
-      if (!player || !videoUrl) return;
+      const video = videoRef.current;
+
       try {
-        player.source = { type: 'video', sources: [{ src: videoUrl }] };
-      } catch (e) {
-        const vid = videoRef.current;
-        if (vid) {
-          vid.src = videoUrl;
-          vid.load();
+        if (player) {
+          player.source = { type: 'video', sources: [{ src: videoUrl }] };
         }
+      } catch {}
+
+      if (video) {
+        video.src = videoUrl;
+        video.load();
       }
     }, [videoUrl, ref]);
 
