@@ -2,12 +2,47 @@ import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { exec } from 'child_process';
 import { VIDEOS_DIR } from '../config';
 
 const CHUNKS_DIR = path.join(VIDEOS_DIR, '..', 'tmp_chunks');
 
 if (!fs.existsSync(CHUNKS_DIR)) {
   fs.mkdirSync(CHUNKS_DIR, { recursive: true });
+}
+
+let ffmpegAvailable: boolean | null = null;
+
+function hasFfmpeg(): Promise<boolean> {
+  if (ffmpegAvailable !== null) return Promise.resolve(ffmpegAvailable);
+  return new Promise(resolve => {
+    exec('ffmpeg -version', (err) => {
+      ffmpegAvailable = !err;
+      resolve(ffmpegAvailable);
+    });
+  });
+}
+
+function optimizeVideo(filePath: string): void {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext !== '.mp4') return;
+  hasFfmpeg().then(available => {
+    if (!available) return;
+    const tmpPath = filePath + '.opt.mp4';
+    exec(
+      `ffmpeg -i "${filePath}" -movflags +faststart -codec copy -y "${tmpPath}"`,
+      (err) => {
+        if (err) {
+          try { fs.unlinkSync(tmpPath); } catch {}
+          return;
+        }
+        try {
+          fs.renameSync(tmpPath, filePath);
+          console.log('[optimize] faststart applied:', path.basename(filePath));
+        } catch {}
+      },
+    );
+  });
 }
 
 const storage = multer.diskStorage({
@@ -62,11 +97,13 @@ router.post('/api/upload', (req, res) => {
     }
 
     const filename = req.file.filename;
+    const filePath = req.file.path;
     res.json({
       name: filename,
       path: filename,
       url: `/api/video/${filename}`,
     });
+    optimizeVideo(filePath);
   });
 });
 
@@ -156,6 +193,7 @@ router.post('/api/upload-chunk/merge', (req, res) => {
       path: finalName,
       url: `/api/video/${finalName}`,
     });
+    optimizeVideo(finalPath);
   });
 
   writeStream.on('error', () => {

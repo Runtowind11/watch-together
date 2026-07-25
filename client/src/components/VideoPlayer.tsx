@@ -61,6 +61,7 @@ const VideoPlayer = forwardRef<Plyr, VideoPlayerProps>(
       if (!player || !videoUrl) return;
       try {
         player.source = { type: 'video', sources: [{ src: videoUrl }] };
+        player.play().catch(() => {});
       } catch (e) {
         const vid = videoRef.current;
         if (vid) {

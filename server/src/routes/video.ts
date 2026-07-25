@@ -3,6 +3,20 @@ import fs from 'fs';
 import path from 'path';
 import { VIDEOS_DIR } from '../config';
 
+const MIME_MAP: Record<string, string> = {
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mkv': 'video/x-matroska',
+  '.avi': 'video/x-msvideo',
+  '.mov': 'video/quicktime',
+  '.m4v': 'video/mp4',
+};
+
+function getMime(filename: string): string {
+  const ext = path.extname(filename).toLowerCase();
+  return MIME_MAP[ext] || 'video/mp4';
+}
+
 const router = Router();
 
 router.get('/api/videos', (_req, res) => {
@@ -31,6 +45,7 @@ router.get('/api/video/:filename', (req, res) => {
   const stat = fs.statSync(filePath);
   const fileSize = stat.size;
   const range = req.headers.range;
+  const mime = getMime(filename);
 
   if (range) {
     const parts = range.replace(/bytes=/, '').split('-');
@@ -42,14 +57,14 @@ router.get('/api/video/:filename', (req, res) => {
       'Content-Range': `bytes ${start}-${end}/${fileSize}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': chunkSize,
-      'Content-Type': 'video/mp4',
+      'Content-Type': mime,
     });
 
     fs.createReadStream(filePath, { start, end }).pipe(res);
   } else {
     res.writeHead(200, {
       'Content-Length': fileSize,
-      'Content-Type': 'video/mp4',
+      'Content-Type': mime,
       'Accept-Ranges': 'bytes',
     });
 
